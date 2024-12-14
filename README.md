@@ -17,6 +17,8 @@ cada tabla tiene un formulario distinto con los datos necesarios para guardar, c
 Al usar esta funcion se abrira una ventana que mostrara las opciones de tabla en las que podemos modificar datos al seleccionar alguna de estas se abrira una ventana donde pedira el ID del registro que desea modificar.
 ![image](https://github.com/user-attachments/assets/ebd6c393-78dc-4705-93b6-ef32390ebb05)
 
+
+
 una vez ingresado se abrira un cuestionario para modificar este registro si todo se llena correctamente sin romper la relacion entre tablas y si el id que se ingreso existe, aparecera una ventana confirmando el cambio pero si alguno de los datos rompe la relacion entre tablas o el id q se ingreso no existe, se abrira una ventana mencionando el error
 ### Eliminar
 al ejecutar este boton se abre una ventana mostrando las opciones de tabla para eliminar registros, dependiendo de que tabla elija el usuario se mostrara una ventana pidiendo un ID que varia segun la tabla que se haya elejido si existe un registro con este ID se mostrara una ventana informando que la eliminacion a sido exitosa
