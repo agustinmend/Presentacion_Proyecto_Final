@@ -15,7 +15,8 @@ al darle click a este boton se abre una ventana con las opciones de tablas donde
 cada tabla tiene un formulario distinto con los datos necesarios para guardar, caso de que haya algun dato mal ingresado que rompa la relacion entre tablas no se podra añadir el registro y se abrira una ventana mostrando un mensaje  de error, caso contrario si todos los datos son correcctos y no rompen la relacion entre tablas se abrira una ventana mostrando un mensaje confirmando que se añadio el registro.
 ### Modificar
 Al usar esta funcion se abrira una ventana que mostrara las opciones de tabla en las que podemos modificar datos al seleccionar alguna de estas se abrira una ventana donde pedira el ID del registro que desea modificar.
-![image](https://github.com/user-attachments/assets/d68f80f6-57b7-4ff6-86e2-69dbac54c5f3)
+![image](https://github.com/user-attachments/assets/ebd6c393-78dc-4705-93b6-ef32390ebb05)
+
 una vez ingresado se abrira un cuestionario para modificar este registro si todo se llena correctamente sin romper la relacion entre tablas y si el id que se ingreso existe, aparecera una ventana confirmando el cambio pero si alguno de los datos rompe la relacion entre tablas o el id q se ingreso no existe, se abrira una ventana mencionando el error
 ### Eliminar
 al ejecutar este boton se abre una ventana mostrando las opciones de tabla para eliminar registros, dependiendo de que tabla elija el usuario se mostrara una ventana pidiendo un ID que varia segun la tabla que se haya elejido si existe un registro con este ID se mostrara una ventana informando que la eliminacion a sido exitosa
