@@ -24,3 +24,6 @@ una vez ingresado se abrira un cuestionario para modificar este registro si todo
 al ejecutar este boton se abre una ventana mostrando las opciones de tabla para eliminar registros, dependiendo de que tabla elija el usuario se mostrara una ventana pidiendo un ID que varia segun la tabla que se haya elejido si existe un registro con este ID se mostrara una ventana informando que la eliminacion a sido exitosa
 ### Migrar a MYSQL
 cuando se ejecute este boton se van a migrar todas las tablas de ServerSQL con sus respectivos datos a la base de datos hecha en MySQL si se hizo alguna modificacion desde la aplicacion esta igual se pasara
+
+## Diagrama de la Base de Datos
+![image](https://github.com/user-attachments/assets/1c329b40-071a-4ddf-8d17-029e7ba8c6ab)
