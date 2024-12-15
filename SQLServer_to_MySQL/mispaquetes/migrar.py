@@ -1,54 +1,6 @@
 import pyodbc
 import pymysql
 import pandas
-def conectar_sqlserver():
-    try:
-        conn_serversql = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};'
-                    'SERVER=' + 'AGUSTIN' + ';'
-                    'DATABASE=' + 'residencial' + ';'
-                    'trusted_connection=yes')
-        print('CONECCION CON SERVER SQL EXITOSA')
-        return conn_serversql
-    except pyodbc.Error as e:
-        print(f"Error al conectar con sql server: ",{e})
-        raise
-def conectar_mysql():
-    try:
-        conn_mysql = pymysql.connect(
-            host='localhost',
-            user='root',
-            password='camade2pisossql',
-            database='prueba',
-            port=3306
-        )
-        print('Coneccion con MySQL exitosa')
-        return conn_mysql
-    except pymysql.Error as e:
-        print(f"Error al conectar con mySQL: ",{e})
-        raise
-def cerrar_serversql(conn_sqlserver):
-    try:
-        if conn_sqlserver:
-            conn_sqlserver.close()
-            print('Conexión con SQL Server cerrada exitosamente.')
-    except Exception as e:
-        print(f"Error al cerrar la conexión de SQL Server: {e}")
-def cerrar_mysql(conn_mysql):
-    try:
-        if conn_mysql:
-            conn_mysql.close()
-            print('Conexión con MySQL cerrada exitosamente.')
-    except Exception as e:
-        print(f"Error al cerrar la conexión de MySQL: {e}")
-def cerrar_cursorserver(cursor_serversql):
-    if cursor_serversql:
-        cursor_serversql.close()
-        print('cursor sqlserver cerrado')
-def cerrar_cursormysql(cursor_mysql):
-    if cursor_mysql:
-        cursor_mysql.close()
-        print('Cursor sql cerrado')
-
 def crear_tablas_mysql(conn_sqlserver, conn_mysql):
     cursor_sqlserver = conn_sqlserver.cursor()
     cursor_mysql = conn_mysql.cursor()
@@ -72,7 +24,6 @@ def crear_tablas_mysql(conn_sqlserver, conn_mysql):
             WHERE TABLE_NAME = '{nombre_tabla}'
         """)
         columnas = cursor_sqlserver.fetchall()
-
         cursor_sqlserver.execute(f"""
             SELECT COLUMN_NAME 
             FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE 
@@ -94,19 +45,21 @@ def crear_tablas_mysql(conn_sqlserver, conn_mysql):
                 columnas_mysql.append(f"{nombre_columna} DATETIME")
             else:
                 columnas_mysql.append(f"{nombre_columna} TEXT")
+        columnas_mysql.append("fecha_modificacion DATETIME DEFAULT NULL")
         if claves_primarias:
             columnas_mysql.append(f"PRIMARY KEY ({', '.join(claves_primarias)})")
         columnas_str = ", ".join(columnas_mysql)
         cursor_mysql.execute(f"CREATE TABLE {nombre_tabla} ({columnas_str});")
-    
+
     conn_mysql.commit()
     cursor_mysql.close()
     cursor_sqlserver.close()
 
+
 def actualizar_datos(conn_sqlserver, conn_mysql):
     cursor_sqlserver = conn_sqlserver.cursor()
     cursor_mysql = conn_mysql.cursor()
-    cursor_sqlserver.execute("""
+    cursor_sqlserver.execute(""" 
         SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'
     """)
     tablas = cursor_sqlserver.fetchall()
@@ -115,18 +68,34 @@ def actualizar_datos(conn_sqlserver, conn_mysql):
         cursor_mysql.execute(f"SHOW TABLES LIKE '{nombre_tabla}'")
         tabla_existe = cursor_mysql.fetchone()
         if tabla_existe:
-            cursor_mysql.execute(f"DELETE FROM {nombre_tabla}")
-        cursor_sqlserver.execute(f"SELECT * FROM {nombre_tabla}")
-        datos = cursor_sqlserver.fetchall()
-        columnas = [desc[0] for desc in cursor_sqlserver.description]
-        for fila in datos:
-            valores = ', '.join([f"'{str(valor)}'" if valor is not None else "NULL" for valor in fila])
-            columnas_str = ', '.join(columnas)
-            sql = f"""
-                INSERT INTO {nombre_tabla} ({columnas_str}) VALUES ({valores});
-            """
-            cursor_mysql.execute(sql)
-
+            cursor_sqlserver.execute(f"SELECT * FROM {nombre_tabla}")
+            datos_sqlserver = cursor_sqlserver.fetchall()
+            columnas_sqlserver = [desc[0] for desc in cursor_sqlserver.description]
+            for fila_sqlserver in datos_sqlserver:
+                valores_sqlserver = ', '.join([f"'{str(valor)}'" if valor is not None else "NULL" for valor in fila_sqlserver])
+                columnas_str = ', '.join(columnas_sqlserver)
+                cursor_mysql.execute(f"SELECT * FROM {nombre_tabla} WHERE {columnas_sqlserver[0]} = {fila_sqlserver[0]}")
+                fila_mysql = cursor_mysql.fetchone()
+                if fila_mysql:
+                    cambios = False
+                    set_clause = []
+                    for col_sqlserver, valor_sqlserver, valor_mysql in zip(columnas_sqlserver, fila_sqlserver, fila_mysql):
+                        if valor_sqlserver != valor_mysql:
+                            set_clause.append(f"{col_sqlserver} = '{str(valor_sqlserver)}'" if valor_sqlserver is not None else f"{col_sqlserver} = NULL")
+                            cambios = True
+                    if cambios:
+                        set_clause.append("fecha_modificacion = NOW()")
+                        set_clause_str = ", ".join(set_clause)
+                        cursor_mysql.execute(f"""
+                            UPDATE {nombre_tabla}
+                            SET {set_clause_str}
+                            WHERE {columnas_sqlserver[0]} = {fila_sqlserver[0]}
+                        """)
+                else:
+                    cursor_mysql.execute(f"""
+                        INSERT INTO {nombre_tabla} ({columnas_str}, fecha_modificacion) 
+                        VALUES ({valores_sqlserver}, NOW())
+                    """)
     conn_mysql.commit()
     print("Sincronización completada.")
     cursor_sqlserver.close()
